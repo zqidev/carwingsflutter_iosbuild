@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:dartcarwings/dartcarwings.dart';
 import 'package:dartnissanconnect/dartnissanconnect.dart' as nissanconnect;
 import 'package:dartnissanconnectna/dartnissanconnectna.dart'
@@ -93,7 +94,8 @@ class Session {
       case API_TYPE.NISSANCONNECTNA:
         // NissanConnect NA requires a specific User-Agent string for authentication.
         // Using the required User-Agent: 5AFC98CCD7E2AF32FD7C59916AABD
-        print('NissanConnect NA: Authenticating with User-Agent: $NISSAN_CONNECT_USER_AGENT');
+        developer.log('Authenticating with User-Agent: $NISSAN_CONNECT_USER_AGENT',
+            name: 'NissanConnect NA');
         if (isCanada()) {
           await nissanConnectNa.login(
             username: username,
@@ -108,13 +110,13 @@ class Session {
             userAgent: NISSAN_CONNECT_USER_AGENT,
           );
         }
-        print('NissanConnect NA: Authentication successful');
+        developer.log('Authentication successful', name: 'NissanConnect NA');
         break;
       case API_TYPE.NISSANCONNECT:
         // NissanConnect World API does not require User-Agent parameter
-        print('NissanConnect World: Authenticating');
+        developer.log('Authenticating', name: 'NissanConnect World');
         await nissanConnect.login(username: username, password: password);
-        print('NissanConnect World: Authentication successful');
+        developer.log('Authentication successful', name: 'NissanConnect World');
         break;
     }
   }
