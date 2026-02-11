@@ -1,9 +1,16 @@
+import 'dart:developer' as developer;
 import 'package:dartcarwings/dartcarwings.dart';
 import 'package:dartnissanconnect/dartnissanconnect.dart' as nissanconnect;
 import 'package:dartnissanconnectna/dartnissanconnectna.dart'
     as nissanconnectna;
 
 enum API_TYPE { CARWINGS, NISSANCONNECTNA, NISSANCONNECT }
+
+/// The User-Agent string required by NissanConnect NA API.
+/// This is not a typical browser user agent, but a specific identifier
+/// required by the NissanConnect server-side API for authentication.
+/// Without this exact string, authentication will fail with 401 errors.
+const String nissanConnectUserAgent = '5AFC98CCD7E2AF32FD7C59916AABD';
 
 /// This class holds a session for the old Carwings API (still used in Europe)
 /// a session for the newer North American NissanConnect API
@@ -85,23 +92,32 @@ class Session {
         );
         break;
       case API_TYPE.NISSANCONNECTNA:
+        // NissanConnect NA requires a specific User-Agent string for authentication.
+        // Using the required User-Agent: 5AFC98CCD7E2AF32FD7C59916AABD
+        // Note: The User-Agent is a public constant, not a secret credential.
+        developer.log('Authenticating with User-Agent: $nissanConnectUserAgent',
+            name: 'NissanConnect NA');
         if (isCanada()) {
           await nissanConnectNa.login(
             username: username,
             password: password,
             countryCode: 'CA',
-            userAgent: '',
+            userAgent: nissanConnectUserAgent,
           );
         } else {
           await nissanConnectNa.login(
             username: username,
             password: password,
-            userAgent: '',
+            userAgent: nissanConnectUserAgent,
           );
         }
+        developer.log('Authentication successful', name: 'NissanConnect NA');
         break;
       case API_TYPE.NISSANCONNECT:
+        // NissanConnect World API does not require User-Agent parameter
+        developer.log('Authenticating', name: 'NissanConnect World');
         await nissanConnect.login(username: username, password: password);
+        developer.log('Authentication successful', name: 'NissanConnect World');
         break;
     }
   }
