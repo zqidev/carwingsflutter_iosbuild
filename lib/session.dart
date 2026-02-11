@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:dartcarwings/dartcarwings.dart';
 import 'package:dartnissanconnect/dartnissanconnect.dart' as nissanconnect;
 import 'package:dartnissanconnectna/dartnissanconnectna.dart'
@@ -12,11 +13,18 @@ enum API_TYPE { CARWINGS, NISSANCONNECTNA, NISSANCONNECT }
 class Session {
   CarwingsSession carwings = CarwingsSession();
   nissanconnectna.NissanConnectSession nissanConnectNa =
-      nissanconnectna.NissanConnectSession();
+      nissanconnectna.NissanConnectSession(debug: true);
   nissanconnect.NissanConnectSession nissanConnect =
-      nissanconnect.NissanConnectSession();
+      nissanconnect.NissanConnectSession(debug: true);
 
   CarwingsRegion region = CarwingsRegion.World;
+
+  // Use a valid iOS User-Agent that matches the official NissanConnect app
+  // This specific version (iOS 16.6) was chosen based on testing with the official app
+  // May need periodic updates to match current iOS versions if API validation changes
+  static const String _validUserAgent =
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) '
+      'AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 
   API_TYPE getAPIType() => isWorld()
       ? API_TYPE.NISSANCONNECT
@@ -70,39 +78,87 @@ class Session {
     }
   }
 
+  /// Retry a login operation with exponential backoff
+  /// 
+  /// Attempts to execute [loginFunction] up to [maxRetries] times (default: 3).
+  /// If a login attempt fails, waits with exponential backoff before retrying:
+  /// - 1st retry: 1 second delay
+  /// - 2nd retry: 2 seconds delay  
+  /// - 3rd retry: 4 seconds delay
+  /// 
+  /// Returns the result from [loginFunction] if successful.
+  /// Rethrows the last exception if all retry attempts fail.
+  Future<T> _retryLogin<T>(Future<T> Function() loginFunction,
+      {int maxRetries = 3}) async {
+    int attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await loginFunction();
+      } catch (e) {
+        attempt++;
+        if (attempt >= maxRetries) {
+          rethrow;
+        }
+        // Exponential backoff: 1s, 2s, 4s
+        await Future.delayed(
+            Duration(seconds: math.pow(2, attempt - 1).toInt()));
+      }
+    }
+    // This should never be reached due to rethrow above
+    throw Exception('Login failed after $maxRetries attempts');
+  }
+
   Future<void> login(
       {required String username,
       required String password,
       CarwingsRegion region = CarwingsRegion.Europe}) async {
     this.region = region;
 
-    switch (getAPIType()) {
-      case API_TYPE.CARWINGS:
-        await carwings.login(
-          username: username,
-          password: password,
-          region: region,
-        );
-        break;
-      case API_TYPE.NISSANCONNECTNA:
-        if (isCanada()) {
-          await nissanConnectNa.login(
+    try {
+      switch (getAPIType()) {
+        case API_TYPE.CARWINGS:
+          await carwings.login(
             username: username,
             password: password,
-            countryCode: 'CA',
-            userAgent: '',
+            region: region,
           );
-        } else {
-          await nissanConnectNa.login(
-            username: username,
-            password: password,
-            userAgent: '',
-          );
-        }
-        break;
-      case API_TYPE.NISSANCONNECT:
-        await nissanConnect.login(username: username, password: password);
-        break;
+          break;
+        case API_TYPE.NISSANCONNECTNA:
+          if (isCanada()) {
+            await _retryLogin(() => nissanConnectNa.login(
+                  username: username,
+                  password: password,
+                  countryCode: 'CA',
+                  userAgent: _validUserAgent,
+                ));
+          } else {
+            await _retryLogin(() => nissanConnectNa.login(
+                  username: username,
+                  password: password,
+                  userAgent: _validUserAgent,
+                ));
+          }
+          break;
+        case API_TYPE.NISSANCONNECT:
+          await nissanConnect.login(username: username, password: password);
+          break;
+      }
+    } catch (e) {
+      // Log error for debugging purposes
+      // ignore: avoid_print
+      print('Login failed for ${getAPIType()} API: $e');
+      // Add more specific error handling based on error type
+      if (e.toString().contains('401')) {
+        throw Exception(
+            'Authentication failed. Please check your credentials.');
+      } else if (e.toString().contains('timeout')) {
+        throw Exception(
+            'Connection timed out. Please check your internet connection.');
+      } else if (e.toString().contains('JSON')) {
+        throw Exception(
+            'Invalid response from server. The API may be temporarily unavailable.');
+      }
+      rethrow;
     }
   }
 }

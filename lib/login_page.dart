@@ -92,12 +92,25 @@ class _LoginPageState extends State<LoginPage> {
         .catchError((error) {
           Util.dismissBigLoadingDialog(context);
 
+          String errorMessage = 'Login failed. Please try again.';
+
+          // Check for specific error types thrown by session.login()
+          String errorStr = error.toString();
+          if (errorStr.contains('Authentication failed')) {
+            errorMessage =
+                'Authentication failed. Please check your credentials and region selection.';
+          } else if (errorStr.contains('timed out')) {
+            errorMessage =
+                'Connection timed out. Please check your internet connection.';
+          } else if (errorStr.contains('Invalid response from server')) {
+            errorMessage =
+                'Server returned invalid response. Please try again later.';
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               duration: Duration(seconds: 5),
-              content: Text(
-                'Sign in failed! Please make sure your credentials are valid!',
-              ),
+              content: Text(errorMessage),
             ),
           );
 
