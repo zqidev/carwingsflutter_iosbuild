@@ -2,40 +2,40 @@ name: Build iOS IPA
 
 on:
   push:
-      branches: [ master, main ]
-        workflow_dispatch:  # Allows manual trigger
+    branches: [ master, main ]
+  workflow_dispatch:  # Allows manual trigger
 
-        jobs:
-          build-ios:
-              runs-on: macos-latest
-
-                      steps:
-                            - name: Checkout repository
-                                    uses: actions/checkout@v4
-
-                                                - name: Set up Flutter
-                                                        uses: subosito/flutter-action@v2
-                                                                with:
-                                                                          channel: 'stable'
-                                                                                    flutter-version: '3.24.0'
-                                                                                              cache: true
-                                                                                                    
-                                                                                                          - name: Get Flutter dependencies
-                                                                                                                  run: flutter pub get
-                                                                                                                        
-                                                                                                                              - name: Build iOS (no codesign)
-                                                                                                                                      run: flutter build ios --release --no-codesign
-                                                                                                                                            
-                                                                                                                                                  - name: Create unsigned IPA
-                                                                                                                                                          run: |
-                                                                                                                                                                    mkdir -p Payload
-                                                                                                                                                                              cp -r build/ios/iphoneos/Runner.app Payload/
-                                                                                                                                                                                        zip -r MyLeaf-unsigned.ipa Payload
-                                                                                                                                                                                                  rm -rf Payload
-                                                                                                                                                                                                        
-                                                                                                                                                                                                              - name: Upload IPA artifact
-                                                                                                                                                                                                                      uses: actions/upload-artifact@v4
-                                                                                                                                                                                                                              with:
-                                                                                                                                                                                                                                        name: MyLeaf-iOS-${{ github.run_number }}
-                                                                                                                                                                                                                                                  path: MyLeaf-unsigned.ipa
-                                                                                                                                                                                                                                                            retention-days: 30
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.24.0'
+          cache: true
+      
+      - name: Get Flutter dependencies
+        run: flutter pub get
+      
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+      
+      - name: Create unsigned IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r MyLeaf-unsigned.ipa Payload
+          rm -rf Payload
+      
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyLeaf-iOS-${{ github.run_number }}
+          path: MyLeaf-unsigned.ipa
+          retention-days: 30
