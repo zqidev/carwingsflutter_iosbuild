@@ -10,7 +10,7 @@ enum API_TYPE { CARWINGS, NISSANCONNECTNA, NISSANCONNECT }
 /// This is not a typical browser user agent, but a specific identifier
 /// required by the NissanConnect server-side API for authentication.
 /// Without this exact string, authentication will fail with 401 errors.
-const String NISSAN_CONNECT_USER_AGENT = '5AFC98CCD7E2AF32FD7C59916AABD';
+const String nissanConnectUserAgent = '5AFC98CCD7E2AF32FD7C59916AABD';
 
 /// This class holds a session for the old Carwings API (still used in Europe)
 /// a session for the newer North American NissanConnect API
@@ -94,20 +94,20 @@ class Session {
       case API_TYPE.NISSANCONNECTNA:
         // NissanConnect NA requires a specific User-Agent string for authentication.
         // Using the required User-Agent: 5AFC98CCD7E2AF32FD7C59916AABD
-        developer.log('Authenticating with User-Agent: $NISSAN_CONNECT_USER_AGENT',
+        developer.log('Authenticating with User-Agent: $nissanConnectUserAgent',
             name: 'NissanConnect NA');
         if (isCanada()) {
           await nissanConnectNa.login(
             username: username,
             password: password,
             countryCode: 'CA',
-            userAgent: NISSAN_CONNECT_USER_AGENT,
+            userAgent: nissanConnectUserAgent,
           );
         } else {
           await nissanConnectNa.login(
             username: username,
             password: password,
-            userAgent: NISSAN_CONNECT_USER_AGENT,
+            userAgent: nissanConnectUserAgent,
           );
         }
         developer.log('Authentication successful', name: 'NissanConnect NA');
