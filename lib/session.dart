@@ -79,6 +79,15 @@ class Session {
   }
 
   /// Retry a login operation with exponential backoff
+  /// 
+  /// Attempts to execute [loginFunction] up to [maxRetries] times (default: 3).
+  /// If a login attempt fails, waits with exponential backoff before retrying:
+  /// - 1st retry: 1 second delay
+  /// - 2nd retry: 2 seconds delay  
+  /// - 3rd retry: 4 seconds delay
+  /// 
+  /// Returns the result from [loginFunction] if successful.
+  /// Rethrows the last exception if all retry attempts fail.
   Future<T> _retryLogin<T>(Future<T> Function() loginFunction,
       {int maxRetries = 3}) async {
     int attempt = 0;
