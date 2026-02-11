@@ -92,12 +92,25 @@ class _LoginPageState extends State<LoginPage> {
         .catchError((error) {
           Util.dismissBigLoadingDialog(context);
 
+          String errorMessage = 'Login failed. Please try again.';
+
+          if (error.toString().contains('credentials')) {
+            errorMessage = 'Invalid username or password.';
+          } else if (error.toString().contains('timeout')) {
+            errorMessage =
+                'Connection timed out. Please check your internet connection.';
+          } else if (error.toString().contains('JSON')) {
+            errorMessage =
+                'Server returned invalid response. Please try again later.';
+          } else if (error.toString().contains('401')) {
+            errorMessage =
+                'Authentication failed. Please check your credentials and region selection.';
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               duration: Duration(seconds: 5),
-              content: Text(
-                'Sign in failed! Please make sure your credentials are valid!',
-              ),
+              content: Text(errorMessage),
             ),
           );
 
