@@ -19,6 +19,11 @@ class Session {
 
   CarwingsRegion region = CarwingsRegion.World;
 
+  // Use a valid iOS User-Agent that matches the official NissanConnect app
+  static const String _validUserAgent =
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) '
+      'AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
+
   API_TYPE getAPIType() => isWorld()
       ? API_TYPE.NISSANCONNECT
       : isNorthAmerica()
@@ -83,8 +88,9 @@ class Session {
         if (attempt >= maxRetries) {
           rethrow;
         }
-        // Exponential backoff: 2s, 4s, 8s
-        await Future.delayed(Duration(seconds: math.pow(2, attempt).toInt()));
+        // Exponential backoff: 1s, 2s, 4s
+        await Future.delayed(
+            Duration(seconds: math.pow(2, attempt - 1).toInt()));
       }
     }
     throw Exception('Login failed after $maxRetries attempts');
@@ -95,11 +101,6 @@ class Session {
       required String password,
       CarwingsRegion region = CarwingsRegion.Europe}) async {
     this.region = region;
-
-    // Use a valid iOS User-Agent that matches the official NissanConnect app
-    const String validUserAgent =
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) '
-        'AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 
     try {
       switch (getAPIType()) {
@@ -116,13 +117,13 @@ class Session {
                   username: username,
                   password: password,
                   countryCode: 'CA',
-                  userAgent: validUserAgent,
+                  userAgent: _validUserAgent,
                 ));
           } else {
             await _retryLogin(() => nissanConnectNa.login(
                   username: username,
                   password: password,
-                  userAgent: validUserAgent,
+                  userAgent: _validUserAgent,
                 ));
           }
           break;
@@ -131,6 +132,8 @@ class Session {
           break;
       }
     } catch (e) {
+      // Log error for debugging purposes
+      // ignore: avoid_print
       print('Login failed for ${getAPIType()} API: $e');
       // Add more specific error handling based on error type
       if (e.toString().contains('401')) {
