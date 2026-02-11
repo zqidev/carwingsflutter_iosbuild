@@ -94,17 +94,17 @@ class _LoginPageState extends State<LoginPage> {
 
           String errorMessage = 'Login failed. Please try again.';
 
-          if (error.toString().contains('credentials')) {
-            errorMessage = 'Invalid username or password.';
-          } else if (error.toString().contains('timeout')) {
-            errorMessage =
-                'Connection timed out. Please check your internet connection.';
-          } else if (error.toString().contains('JSON')) {
-            errorMessage =
-                'Server returned invalid response. Please try again later.';
-          } else if (error.toString().contains('401')) {
+          // Check for specific error types thrown by session.login()
+          String errorStr = error.toString();
+          if (errorStr.contains('Authentication failed')) {
             errorMessage =
                 'Authentication failed. Please check your credentials and region selection.';
+          } else if (errorStr.contains('timed out')) {
+            errorMessage =
+                'Connection timed out. Please check your internet connection.';
+          } else if (errorStr.contains('Invalid response from server')) {
+            errorMessage =
+                'Server returned invalid response. Please try again later.';
           }
 
           ScaffoldMessenger.of(context).showSnackBar(

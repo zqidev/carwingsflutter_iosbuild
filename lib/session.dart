@@ -20,6 +20,8 @@ class Session {
   CarwingsRegion region = CarwingsRegion.World;
 
   // Use a valid iOS User-Agent that matches the official NissanConnect app
+  // This specific version (iOS 16.6) was chosen based on testing with the official app
+  // May need periodic updates to match current iOS versions if API validation changes
   static const String _validUserAgent =
       'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) '
       'AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
@@ -93,6 +95,7 @@ class Session {
             Duration(seconds: math.pow(2, attempt - 1).toInt()));
       }
     }
+    // This should never be reached due to rethrow above
     throw Exception('Login failed after $maxRetries attempts');
   }
 
