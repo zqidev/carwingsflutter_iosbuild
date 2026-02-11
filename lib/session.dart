@@ -94,6 +94,7 @@ class Session {
       case API_TYPE.NISSANCONNECTNA:
         // NissanConnect NA requires a specific User-Agent string for authentication.
         // Using the required User-Agent: 5AFC98CCD7E2AF32FD7C59916AABD
+        // Note: The User-Agent is a public constant, not a secret credential.
         developer.log('Authenticating with User-Agent: $nissanConnectUserAgent',
             name: 'NissanConnect NA');
         if (isCanada()) {
