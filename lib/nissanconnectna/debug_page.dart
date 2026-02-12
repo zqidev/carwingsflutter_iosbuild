@@ -32,7 +32,6 @@ class _DebugPageState extends State<DebugPage> {
         child: SelectableText(
           allLogs.isEmpty ? 'No logs yet' : allLogs,
           style: TextStyle(
-            fontFamily: 'monospace',
             fontSize: 12.0,
           ),
         ),

@@ -7,7 +7,7 @@
 1. **Debug Page UI Improvements** - Fixed all 3 debug pages (carwings, nissanconnect, nissanconnectna):
    - Fixed typo in `nissanconnect/debug_page.dart` (was using wrong session variable)
    - Replaced individual log bubble ListView with unified SelectableText view
-   - Added monospace font for better readability
+   - Uses system default font for maximum compatibility
    - All logs now display in a single scrollable, copyable text block
    - Copy All button still works as before
 
