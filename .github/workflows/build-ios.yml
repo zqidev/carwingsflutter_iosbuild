@@ -20,7 +20,7 @@ jobs:
         with:
           channel: 'stable'
           # Using latest stable Flutter 3.x
-          flutter-version: '3.24.5'
+          flutter-version: '3.41.0'
           cache: true
       
       - name: Flutter doctor
