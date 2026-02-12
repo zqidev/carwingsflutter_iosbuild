@@ -17,6 +17,9 @@ class _DebugPageState extends State<DebugPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Create a unified text view with all logs
+    String allLogs = widget.session.nissanConnectNa.debugLog.reversed.join('\n\n');
+    
     return SafeAreaScaffold(
       appBar: AppBar(
         title: Text("Debug log"),
@@ -24,26 +27,14 @@ class _DebugPageState extends State<DebugPage> {
           IconButton(icon: Icon(Icons.content_copy), onPressed: _copyAll),
         ],
       ),
-      body: ListView(
+      body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-        children: widget.session.nissanConnectNa.debugLog.reversed.map((
-          String logEntry,
-        ) {
-          return Column(
-            children: <Widget>[
-              InkWell(
-                child: Text(logEntry),
-                onLongPress: () {
-                  Clipboard.setData(ClipboardData(text: logEntry));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Copied to Clipboard")),
-                  );
-                },
-              ),
-              Padding(padding: const EdgeInsets.all(3.0)),
-            ],
-          );
-        }).toList(),
+        child: SelectableText(
+          allLogs.isEmpty ? 'No logs yet' : allLogs,
+          style: TextStyle(
+            fontSize: 12.0,
+          ),
+        ),
       ),
     );
   }
