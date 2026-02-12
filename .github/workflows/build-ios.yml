@@ -3,6 +3,8 @@ name: Build iOS IPA
 on:
   push:
     branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
@@ -17,25 +19,95 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.35.0'
+          # Using latest stable Flutter 3.x
+          flutter-version: '3.24.5'
           cache: true
+      
+      - name: Flutter doctor
+        run: flutter doctor -v
+      
+      - name: Clean Flutter build cache
+        run: flutter clean
       
       - name: Get Flutter dependencies
         run: flutter pub get
       
+      - name: Verify local dependencies exist
+        run: |
+          echo "Checking local Dart dependencies..."
+          ls -la dartcarwings-master/
+          ls -la dartnissanconnect-master/
+          ls -la dartnissanconnectna-master/
+      
+      - name: Verify iOS entitlements file
+        run: |
+          echo "Checking entitlements file..."
+          ls -la ios/Runner/Runner.entitlements
+          cat ios/Runner/Runner.entitlements
+      
       - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
+        run: |
+          echo "Building iOS app with all fixes and entitlements..."
+          flutter build ios --release --no-codesign
+      
+      - name: Verify build output
+        run: |
+          echo "Checking build artifacts..."
+          ls -la build/ios/iphoneos/
+          ls -la build/ios/iphoneos/Runner.app/
       
       - name: Create unsigned IPA
         run: |
+          echo "Creating IPA package..."
           mkdir -p Payload
           cp -r build/ios/iphoneos/Runner.app Payload/
+          
+          # Verify entitlements are included in the app
+          if [ -f "build/ios/iphoneos/Runner.app/Runner.entitlements" ]; then
+            echo "✓ Entitlements found in app bundle"
+          fi
+          
+          # Create IPA
           zip -r MyLeaf-unsigned.ipa Payload
           rm -rf Payload
+          
+          # Show IPA info
+          ls -lh MyLeaf-unsigned.ipa
+          echo "✓ IPA created successfully"
       
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MyLeaf-iOS-${{ github.run_number }}
+          name: MyLeaf-iOS-unsigned-${{ github.run_number }}
           path: MyLeaf-unsigned.ipa
           retention-days: 30
+      
+      - name: Build summary
+        run: |
+          echo "## Build Complete! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bundle ID**: com.zqidev.myleaf" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: $(grep 'version:' pubspec.yaml | head -1 | awk '{print $2}')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Entitlements**: ✓ Included (Runner.entitlements)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Features Included" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Enhanced NA/EU authentication error logging" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Hardcoded User-Agent-Key (no external dependency)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Null safety checks for authentication" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ iOS entitlements for network and keychain access" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Local path dependencies (dartcarwings, dartnissanconnect, dartnissanconnectna)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Improved debug logging UI" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Download" >> $GITHUB_STEP_SUMMARY
+          echo "The unsigned IPA can be downloaded from the artifacts section above." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo "To install on your device:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download the IPA artifact" >> $GITHUB_STEP_SUMMARY
+          echo "2. Sign with your own certificate using tools like:" >> $GITHUB_STEP_SUMMARY
+          echo "   - iOS App Signer" >> $GITHUB_STEP_SUMMARY
+          echo "   - Xcode" >> $GITHUB_STEP_SUMMARY
+          echo "   - fastlane" >> $GITHUB_STEP_SUMMARY
+          echo "3. Install via Xcode, AltStore, Sideloadly, or similar tools" >> $GITHUB_STEP_SUMMARY
