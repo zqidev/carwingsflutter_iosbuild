@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 class _DebugPageState extends State<DebugPage> {
   _copyAll() {
     String text = '';
-    widget.session.nissanConnectNa.debugLog.forEach(
+    widget.session.nissanConnect.debugLog.forEach(
       (logEntry) => text += logEntry + '\n\n',
     );
     Clipboard.setData(ClipboardData(text: text));
@@ -17,6 +17,9 @@ class _DebugPageState extends State<DebugPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Create a unified text view with all logs
+    String allLogs = widget.session.nissanConnect.debugLog.reversed.join('\n\n');
+    
     return SafeAreaScaffold(
       appBar: AppBar(
         title: Text("Debug log"),
@@ -24,36 +27,15 @@ class _DebugPageState extends State<DebugPage> {
           IconButton(icon: Icon(Icons.content_copy), onPressed: _copyAll),
         ],
       ),
-      body: ListView(
+      body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-        children: widget.session.nissanConnect.debugLog.reversed.map((
-          String logEntry,
-        ) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: logEntry.contains('Result:')
-                      ? Colors.green.withValues(alpha: .3)
-                      : Colors.blue.withValues(alpha: .3),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: InkWell(
-                  child: Text(logEntry),
-                  onLongPress: () {
-                    Clipboard.setData(ClipboardData(text: logEntry));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Copied to Clipboard")),
-                    );
-                  },
-                ),
-              ),
-              Padding(padding: const EdgeInsets.all(3.0)),
-            ],
-          );
-        }).toList(),
+        child: SelectableText(
+          allLogs.isEmpty ? 'No logs yet' : allLogs,
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 12.0,
+          ),
+        ),
       ),
     );
   }
