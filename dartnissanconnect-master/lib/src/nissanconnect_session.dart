@@ -203,6 +203,9 @@ class NissanConnectSession {
       _print('Result: $jsonData');
     } catch (e) {
       _print('JSON decoding failed!');
+      _print('Error: $e');
+      _print('Response status: ${response.statusCode}');
+      _print('Response body: ${response.body}');
     }
 
     return NissanConnectResponse(

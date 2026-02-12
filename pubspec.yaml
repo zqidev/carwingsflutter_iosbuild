@@ -15,13 +15,11 @@ dependencies:
   in_app_purchase: ^3.2.0
   workmanager: ^0.9.0+3
   dartcarwings:
-    git: https://gitlab.com/tobiaswkjeldsen/dartcarwings.git
+    path: ./dartcarwings-master
   dartnissanconnectna:
-    git: https://gitlab.com/tobiaswkjeldsen/dartnissanconnectna.git
+    path: ./dartnissanconnectna-master
   dartnissanconnect:
-    git:
-      url: https://gitlab.com/tobiaswkjeldsen/dartnissanconnect.git
-      ref: 3bb871e52cc55723a038ce6b1c60da1af6c1c0a8
+    path: ./dartnissanconnect-master
 
 
 dev_dependencies:
