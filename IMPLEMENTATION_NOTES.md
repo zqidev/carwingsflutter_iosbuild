@@ -32,7 +32,8 @@ The following changes **cannot be automated** because they require modifying ext
 #### 1. dartnissanconnectna Library Fix
 
 **Location:** `https://gitlab.com/tobiaswkjeldsen/dartnissanconnectna.git`  
-**File:** `lib/src/nissanconnect_session.dart` (around lines 108-113)
+**File:** `lib/src/nissanconnect_session.dart`  
+**Method:** In the login or initialization method where userAgentKey is set
 
 **Current Code:**
 ```dart
@@ -44,11 +45,13 @@ this.userAgentKey = userAgentKey.body;
 **Should be changed to:**
 ```dart
 // Hardcoded User-Agent-Key (public constant, not a secret)
-// This hasn't changed in 4+ years and is required for NA authentication
+// This is a server-side API identifier required by NissanConnect NA
+// The value has been stable for 4+ years and is publicly available
+// in the dartnissanconnectna repository and various open-source projects
 this.userAgentKey = '5AFC98CCD7E2AF32FD7C59916AABD';
 ```
 
-**Why:** The dynamic GitLab fetch can fail or timeout, causing authentication failures. The key is a public constant that hasn't changed in years.
+**Why:** The dynamic GitLab fetch can fail or timeout, causing authentication failures. The key is a public constant required by Nissan's server-side API for authentication, not a secret credential.
 
 **Workaround Options:**
 1. Fork the repository on GitLab, make the change, and update `pubspec.yaml` to point to your fork
@@ -83,7 +86,8 @@ try {
 #### 3. World Region Authentication Retry Logic
 
 **Location:** `https://gitlab.com/tobiaswkjeldsen/dartnissanconnect.git`  
-**File:** `lib/src/nissanconnect_session.dart` (around lines 223-275)
+**File:** `lib/src/nissanconnect_session.dart`  
+**Method:** In the world region authentication method with the retry loop
 
 **Required Changes:**
 - Reduce max retries from 10 to 3-5
@@ -175,9 +179,6 @@ Contact the library maintainers and submit merge requests with these fixes. This
 
 ## Notes
 
-- The User-Agent-Key `5AFC98CCD7E2AF32FD7C59916AABD` is a **public constant**, not a secret credential
-- This key is required by the NissanConnect NA server-side API for authentication
-- The key has been stable for 4+ years and is unlikely to change
 - All network calls go through HTTPS for security
 - iOS entitlements follow Apple's sandboxing requirements
 - App Groups must match the Bundle Identifier pattern
