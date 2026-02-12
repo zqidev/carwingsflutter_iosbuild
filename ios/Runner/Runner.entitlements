@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Network Access -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+	
+	<!-- Background Processing -->
+	<key>com.apple.developer.background-mode</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+	
+	<!-- Keychain Access Groups -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.zqidev.myleaf</string>
+	</array>
+	
+	<!-- App Groups for data sharing (optional but recommended) -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.zqidev.myleaf</string>
+	</array>
+</dict>
+</plist>

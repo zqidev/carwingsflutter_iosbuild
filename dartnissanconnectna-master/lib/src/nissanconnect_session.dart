@@ -89,6 +89,8 @@ class NissanConnectSession {
       _print('Result: $jsonData');
     } catch (e) {
       _print('JSON decoding failed!');
+      _print('Raw response body: ${response.body}');
+      _print('Response status code: ${response.statusCode}');
     }
 
     return NissanConnectResponse(
@@ -105,11 +107,8 @@ class NissanConnectSession {
     this.password = password;
     this.userAgent = userAgent;
 
-    /// We grab the User-Agent-Key from this projects Git repo
-    var userAgentKey = await http.get(Uri.parse(
-        'https://gitlab.com/tobiaswkjeldsen/dartnissanconnectna/-/raw/master/user_agent_key'));
-
-    this.userAgentKey = userAgentKey.body;
+    // Use the hardcoded API key as User-Agent-Key
+    this.userAgentKey = this.apiKey;
 
     NissanConnectResponse response =
         await request(endpoint: 'auth/authenticationForAAS', params: {
